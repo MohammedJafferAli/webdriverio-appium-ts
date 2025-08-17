@@ -10,8 +10,8 @@ This project demonstrates mobile automation testing using **WebdriverIO**, **Moc
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/mobile-wdio-appium.git
-cd mobile-wdio-appium
+git clone https://github.com/your-username/webdriverio-appium-ts.git
+cd webdriverio-appium-ts
 ```
 
 ---
@@ -20,11 +20,11 @@ cd mobile-wdio-appium
 
 Ensure the following tools are installed:
 
-- Node.js (v18+) to check if its already installed node -v
-- Java JDK --> java --version
-- Android Studio (with emulator setup) 
-- Xcode (macOS only, for iOS Simulator)
-- Appium (v2.x) --> 'appium' in the term
+- **Node.js (v18+)** - Check: `node -v`
+- **Java JDK** - Check: `java --version`
+- **Android Studio** (with emulator setup)
+- **Xcode** (macOS only, for iOS Simulator)
+- **Appium (v2.x)** - Check: `appium --version`
 
 ---
 
@@ -48,48 +48,64 @@ appium driver install xcuitest
 
 ## 🛠 Project Configuration
 
-### TypeScript
+### Environment Variables
 
-Ensure `tsconfig.json` includes:
+Copy `.env.example` to `.env` and configure:
+
+```bash
+cp .env.example .env
+```
+
+### TypeScript Configuration
+
+The project uses TypeScript with strict settings in `tsconfig.json`:
 
 ```json
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "es2022",
     "module": "commonjs",
     "strict": true,
-    "esModuleInterop": true,
     "moduleResolution": "node",
-    "types": ["node", "@wdio/globals/types"]
+    "types": ["node", "@wdio/mocha-framework"]
   }
 }
 ```
 
-### WebdriverIO Configuration (`wdio.conf.ts`)
+### WebdriverIO Configurations
 
-Update capabilities for Android and iOS:
+The project includes separate configuration files:
 
-#### Android Emulator
+- `wdio.conf.ts` - Base configuration with both Android and iOS capabilities
+- `wdio.android.conf.ts` - Android-specific configuration
+- `wdio.ios.conf.ts` - iOS-specific configuration
+
+#### Android Configuration
 
 ```ts
 capabilities: [{
   platformName: 'Android',
-  'appium:deviceName': 'Android Emulator',
+  'appium:deviceName': 'emulator-5554',
+  'appium:udid': 'emulator-5554',
   'appium:platformVersion': '13.0',
   'appium:automationName': 'UiAutomator2',
-  'appium:app': '/absolute/path/to/app.apk',
+  'appium:app': path.join(process.cwd(), 'app', 'android', 'app-appstore-release-dexguard.apk'),
+  'appium:autoGrantPermissions': true,
+  'appium:noReset': false
 }]
 ```
 
-#### iOS Simulator
+#### iOS Configuration
 
 ```ts
 capabilities: [{
   platformName: 'iOS',
-  'appium:deviceName': 'iPhone 14',
-  'appium:platformVersion': '16.0',
+  'appium:deviceName': 'iPhone 15 Pro',
+  'appium:platformVersion': '17.5',
   'appium:automationName': 'XCUITest',
-  'appium:app': '/absolute/path/to/app.app',
+  'appium:app': path.join(process.cwd(), 'app', 'ios', 'wdiodemoapp.app'),
+  'appium:autoAcceptAlerts': true,
+  'appium:noReset': false
 }]
 ```
 
@@ -101,12 +117,14 @@ capabilities: [{
 
 ```bash
 emulator -avd <your_avd_name>
+# or use Android Studio AVD Manager
 ```
 
 ### iOS Simulator (macOS only)
 
 ```bash
-xcrun simctl boot "iPhone 14"
+xcrun simctl boot "iPhone 15 Pro"
+# or use Xcode Simulator
 ```
 
 ---
@@ -115,14 +133,32 @@ xcrun simctl boot "iPhone 14"
 
 ```bash
 appium
+# Server will start on http://localhost:4723
 ```
 
 ---
 
 ## 🧪 Run Tests
 
+### Run All Tests (Android + iOS)
 ```bash
+npm test
+# or
 npx wdio run wdio.conf.ts
+```
+
+### Run Android Tests Only
+```bash
+npm run test:android
+# or
+npx wdio run wdio.android.conf.ts
+```
+
+### Run iOS Tests Only
+```bash
+npm run test:ios
+# or
+npx wdio run wdio.ios.conf.ts
 ```
 
 ---
@@ -130,21 +166,62 @@ npx wdio run wdio.conf.ts
 ## 📁 Project Structure
 
 ```
-mobile-wdio-appium/
+webdriverio-appium-ts/
+├── app/
+│   ├── android/
+│   │   └── app-appstore-release-dexguard.apk
+│   └── ios/
+│       └── wdiodemoapp.app/
 ├── test/
+│   ├── data/
+│   │   └── testData.ts
+│   ├── helpers/
+│   │   └── utils.ts
+│   ├── pageobjects/
+│   │   ├── page.ts
+│   │   ├── login.page.ts
+│   │   └── secure.page.ts
 │   └── specs/
-│       └── sample.e2e.ts
+│       ├── app.test.ts
+│       └── ios.test.ts
+├── .env.example
+├── .nvmrc
 ├── wdio.conf.ts
+├── wdio.android.conf.ts
+├── wdio.ios.conf.ts
 ├── tsconfig.json
 └── package.json
 ```
 
 ---
 
+## 🔧 Services & Features
+
+- **Appium Service**: Automatically manages Appium server
+- **Visual Service**: Screenshot comparison capabilities
+- **VSCode Service**: Enhanced debugging support
+- **Page Object Model**: Organized test structure
+- **TypeScript**: Full type safety
+- **Mocha Framework**: BDD-style testing
+
+---
+
 ## 🆘 Troubleshooting
 
-- Ensure emulators/simulators are running before executing tests.
-- Use absolute paths for app files in capabilities.
-- Check Appium logs for device connection issues.
+- **Emulator Issues**: Ensure emulators/simulators are running before executing tests
+- **App Path**: The project uses relative paths with `path.join()` for cross-platform compatibility
+- **Port Conflicts**: Default Appium port is 4723, ensure it's available
+- **Node Version**: Use Node.js v18+ (check `.nvmrc` file)
+- **Appium Logs**: Check Appium server logs for device connection issues
+- **Permissions**: Ensure proper permissions for Android (`autoGrantPermissions: true`)
+
+---
+
+## 📚 Additional Resources
+
+- [WebdriverIO Documentation](https://webdriver.io/)
+- [Appium Documentation](https://appium.io/)
+- [TypeScript Documentation](https://www.typescriptlang.org/)
+- [Mocha Documentation](https://mochajs.org/)
 
 ---
