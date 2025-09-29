@@ -23,8 +23,13 @@ Ensure the following tools are installed:
 - **Node.js (v18+)** - Check: `node -v`
 - **Java JDK** - Check: `java --version`
 - **Android Studio** (with emulator setup)
+-  - Set ANDROID_HOME path
+   - Setup simulator (e.g.pixel 9 api 35)
+- **Appium desktop inspector** 
 - **Xcode** (macOS only, for iOS Simulator)
 - **Appium (v2.x)** - Check: `appium --version`
+- Run `appium-doctor --version` to check the installation
+- if not install `npm install -g appium-doctor` and check again, then `appium-doctor --version` 
 
 ---
 
